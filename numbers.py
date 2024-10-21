@@ -20,3 +20,4 @@ for i in range(5):
     plt.imshow(image, cmap='gray')
     plt.title(f"Obraz {i+1}")
     plt.show()
+ # type: ignore
