@@ -1,7 +1,8 @@
 from mnist import MNIST
 import numpy as np
-from collections import Counter
 from sklearn.metrics import accuracy_score
+from algorythm import KNN
+import matplotlib.pyplot as plt
 
 
 # Wczytaj dane MNIST
@@ -10,49 +11,41 @@ X_train, y_train = mndata.load_training()
 X_test, y_test = mndata.load_testing()
 
 # Przekształcamy dane na macierze NumPy
-X_train = np.array(X_train)
-y_train = np.array(y_train)
-X_test = np.array(X_test)
-y_test = np.array(y_test)
+X_train = np.array(X_train)[:1000]
+y_train = np.array(y_train)[:1000]
+X_test = np.array(X_test)[:200]
+y_test = np.array(y_test)[:200]
 
-# Implementacja KNN
-class KNN:
-    def __init__(self, k):
-        self.k = k
 
-    def fit(self, X_train, y_train):
-        self.X_train = X_train
-        self.y_train = y_train
+k_values = range(1, 10)
+k_scores = []
 
-    def predict(self, X_test):
-        predictions = []
-        for x in X_test:
-            # Liczymy odległość euklidesową
-            differences = self.X_train - x
-            distances = np.sqrt(np.sum(differences**2, axis=1))
-            # Znajdujemy k najbliższych sąsiadów
-            sorted_indices = np.argsort(distances)
-            k_indices = sorted_indices[:self.k] 
-            k_nearest_labels = []
-            for i in k_indices:
-                k_nearest_labels.append(self.y_train[i])
-             # Najczęściej występująca etykieta
-            most_common = Counter(k_nearest_labels).most_common(1)
-            predictions.append(most_common[0][0])
-        return predictions
+for k in k_values:
+    knn = KNN(k=k)  # Inicjalizacja KNN z bieżącym k
+    knn.fit(X_train, y_train)  # Trenuj model na danych treningowych
+    predictions = knn.predict(X_test)  # Przewiduj dla zbioru testowego
+    accuracy = accuracy_score(y_test, predictions)  # Oblicz dokładność
+    k_scores.append(accuracy)
 
-knn = KNN(k=3)
+# Znalezienie najlepszego k
+best_k = k_values[np.argmax(k_scores)]
+best_score = max(k_scores)
 
-# trening modelu na danych treningowych
+print(f"The best value of k is {best_k} with an accuracy of {best_score:.4f}")
+
+# Rysowanie wykresu dokładności dla różnych wartości k
+plt.plot(k_values, k_scores, marker='o')
+plt.xlabel('Value of K for KNN')
+plt.ylabel('Accuracy on Test Set')
+plt.title('Finding the Best K for KNN on Titanic Dataset')
+plt.grid()
+plt.show()
+
+knn = KNN(k=best_k)
 knn.fit(X_train, y_train)
+predictions = knn.predict(X_test[:1000])
 
-# Przewidujemy klasy/etykiety dla 100 pierwszych
-predictions = knn.predict(X_test[:100])
-
-#Wynik
+#Wyniki
 print(predictions)
-accuracy = accuracy_score(y_test[:100], predictions)
+accuracy = accuracy_score(y_test[:1000], predictions)
 print(f"Dokładność modelu: {accuracy * 100:.2f}%")
-
-
-

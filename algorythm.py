@@ -7,7 +7,7 @@ class KNN:
 
     def fit(self, X_train, y_train):
         self.X_train = X_train
-        self.y_train = y_train
+        self.y_train = np.array(y_train)
 
     def predict(self, X_test):
         predictions = []
@@ -18,10 +18,8 @@ class KNN:
             # Znajdujemy k najbliższych sąsiadów
             sorted_indices = np.argsort(distances)
             k_indices = sorted_indices[:self.k] 
-            k_nearest_labels = []
-            for i in k_indices:
-                k_nearest_labels.append(self.y_train[i])
-             # Najczęściej występująca etykieta
+            k_nearest_labels = [self.y_train[i] for i in k_indices]
+            # Najczęściej występująca etykieta
             most_common = Counter(k_nearest_labels).most_common(1)
             predictions.append(most_common[0][0])
         return predictions
